@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .game-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .game-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .play-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(238, 90, 36, 0.4);
+        }
+        
+        .game-content {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .game-content.active {
+            display: flex;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        /* Tic Tac Toe Styles */
+        .tic-tac-toe {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 10px;
+        }
+        
+        .cell {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .cell:hover {
+            background: #f0f0f0;
+        }
+        
+        /* Snake Game Styles */
+        .snake-game {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: #222;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .snake-board {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .snake-segment {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 3px;
+        }
+        
+        .food {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #FF5252;
+            border-radius: 50%;
+        }
+        
+        /* Memory Game Styles */
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            gap: 10px;
+        }
+        
+        .memory-card {
+            width: 80px;
+            height: 80px;
+            background: #3498db;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .memory-card.matched {
+            opacity: 0.7;
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+        }
+        
+        .card-front {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .card-back {
+            background: #3498db;
+            color: white;
+            transform: rotateY(180deg);
+        }
+        
+        /* Quiz Game Styles */
+        .quiz-game {
+            width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        /* Hangman Styles */
+        .hangman-game {
+            text-align: center;
+        }
+        
+        .word-display {
+            font-size: 2rem;
+            margin: 20px 0;
+            letter-spacing: 10px;
+            color: white;
+        }
+        
+        .hangman-input {
+            padding: 10px;
+            font-size: 1.2rem;
+            border: 2px solid white;
+            border-radius: 8px;
+            background: transparent;
+            color: white;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .hangman-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .wrong-letters {
+            color: #ff6b6b;
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        /* Pong Game Styles */
+        .pong-game {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background: #111;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .paddle {
+            position: absolute;
+            width: 15px;
+            height: 80px;
+            background: white;
+        }
+        
+        .left-paddle {
+            left: 10px;
+        }
+        
+        .right-paddle {
+            right: 10px;
+        }
+        
+        .ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 190px;
+            left: 290px;
+        }
+        
+        .score {
+            position: absolute;
+            top: 20px;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .left-score {
+            left: 150px;
+        }
+        
+        .right-score {
+            right: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Game Collection</h1>
+            <p class="subtitle">Enjoy these fun and interactive games!</p>
+        </header>
+        
+        <div class="games-grid">
+            <div class="game-card" onclick="openGame('tic-tac-toe')">
+                <h3>Tic Tac Toe</h3>
+                <p>Classic X and O game for two players. Challenge your friends!</p>
+                <button class="play-btn">Play Now</button>
+            </div>
+            
+            <div class="game-card" onclick="openGame('snake')">
+                <h3>Snake Game</h3>
+                <p>Control the snake and eat food to grow longer without hitting walls!</p>
+                <button class="play-btn">Play Now</button>
+            </div>
+            
+            <div class="game-card" onclick="openGame('memory')">
+                <h3>Memory Match</h3>
+                <p>Test your memory by matching pairs of cards. How good is your recall?</p>
+                <button class="play-btn">Play Now</button>
+            </div>
+            
+            <div class="game-card" onclick="openGame('quiz')">
+                <h3>Quiz Challenge</h3>
+                <p>Answer fun trivia questions and test your knowledge!</p>
+                <button class="play-btn">Play Now</button>
+            </div>
+            
+            <div class="game-card" onclick="openGame('hangman')">
+                <h3>Hangman</h3>
+                <p>Guess the hidden word before the hangman is complete!</p>
+                <button class="play-btn">Play Now</button>
+            </div>
+            
+            <div class="game-card" onclick="openGame('pong')">
+                <h3>Pong</h3>
+                <p>Classic arcade game where you bounce the ball back and forth!</p>
+                <button class="play-btn">Play Now</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Game Content Containers -->
+    <div id="tic-tac-toe" class="game-content">
+        <button class="close-btn" onclick="closeGame()">×</button>
+        <h2 style="color: white; margin-bottom: 20px;">Tic Tac Toe</h2>
+        <div class="tic-tac-toe" id="tic-tac-toe-board">
+            <div class="cell" onclick="makeMove(0)"></div>
+            <div class="cell" onclick="makeMove(1)"></div>
+            <div class="cell" onclick="makeMove(2)"></div>
+            <div class="cell" onclick="makeMove(3)"></div>
+            <div class="cell" onclick="makeMove(4)"></div>
+            <div class="cell" onclick="makeMove(5)"></div>
+            <div class="cell" onclick="makeMove(6)"></div>
+            <div class="cell" onclick="makeMove(7)"></div>
+            <div class="cell" onclick="makeMove(8)"></div>
+        </div>
+        <div id="tic-tac-toe-status" style="color: white; margin-top: 20px; font-size: 1.2rem;"></div>
+        <button onclick="resetTicTacToe()" class="play-btn" style="margin-top: 20px;">Reset Game</button>
+    </div>
+    
+    <div id="snake" class="game-content">
+        <button class="close-btn" onclick="closeGame()">×</button>
+        <h2 style="color: white; margin-bottom: 20px;">Snake Game</h2>
+        <div class="snake-game">
+            <div class="snake-board" id="snake-board"></div>
+        </div>
+        <div style="color: white; margin-top: 20px;">
+            Use arrow keys to control the snake
+        </div>
+    </div>
+    
+    <div id="memory" class="game-content">
+        <button class="close-btn" onclick="closeGame()">×</button>
+        <h2 style="color: white; margin-bottom: 20px;">Memory Match</h2>
+        <div class="memory-game" id="memory-board"></div>
+        <div style="color: white; margin-top: 20px; font-size: 1.2rem;">
+            Find matching pairs of cards!
+        </div>
+        <button onclick="resetMemoryGame()" class="play-btn" style="margin-top: 20px;">Reset Game</button>
+    </div>
+    
+    <div id="quiz" class="game-content">
+        <button class="close-btn" onclick="closeGame()">×</button>
+        <div class="quiz-game">
+            <h2>Quiz Challenge</h2>
+            <div class="question" id="quiz-question"></div>
+            <div class="options" id="quiz-options"></div>
+            <div id="quiz-result" style="margin-top: 15px; font-weight: bold;"></div>
+            <button onclick="nextQuestion()" class="play-btn" style="margin-top: 20px;">Next Question</button>
+        </div>
+    </div>
+    
+    <div id="hangman" class="game-content">
+        <button class="close-btn" onclick="closeGame()">×</button>
+        <div class="hangman-game">
+            <h2 style="color: white;">Hangman</h2>
+            <div class="word-display" id="hangman-word"></div>
+            <input type="text" class="hangman-input" id="hangman-guess" maxlength="1" placeholder="Guess a letter" onkeypress="handleHangmanGuess(event)">
+            <div class="wrong-letters" id="hangman-wrong"></div>
+            <button onclick="resetHangman()" class="play-btn">New Game</button>
+        </div>
+    </div>
+    
+    <div id="pong" class="game-content">
+        <button class="close-btn" onclick="closeGame()">×</button>
+        <h2 style="color: white; margin-bottom: 20px;">Pong</h2>
+        <div class="pong-game" id="pong-container">
+            <div class="score left-score" id="left-score">0</div>
+            <div class="score right-score" id="right-score">0</div>
+            <div class="paddle left-paddle" id="left-paddle"></div>
+            <div class="paddle right-paddle" id="right-paddle"></div>
+            <div class="ball" id="ball"></div>
+        </div>
+        <div style="color: white; margin-top: 20px;">
+            Player 1: W/S keys | Player 2: Up/Down arrow keys
+        </div>
+    </div>
+
+    <script>
+        // Tic Tac Toe Game
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+        
+        function makeMove(index) {
+            if (gameBoard[index] === '' && gameActive) {
+                gameBoard[index] = currentPlayer;
+                document.querySelectorAll('.cell')[index].textContent = currentPlayer;
+                if (checkWinner()) {
+                    document.getElementById('tic-tac-toe-status').textContent = `Player ${currentPlayer} wins!`;
+                    gameActive = false;
+                } else if (!gameBoard.includes('')) {
+                    document.getElementById('tic-tac-toe-status').textContent = "It's a draw!";
+                    gameActive = false;
+                } else {
+                    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                    document.getElementById('tic-tac-toe-status').textContent = `Player ${currentPlayer}'s turn`;
+                }
+            }
+        }
+        
+        function checkWinner() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6] // diagonals
+            ];
+            
+            return winPatterns.some(pattern => {
+                const [a, b, c] = pattern;
+                return gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c];
+            });
+        }
+        
+        function resetTicTacToe() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            document.querySelectorAll('.cell').forEach(cell => cell.textContent = '');
+            document.getElementById('tic-tac-toe-status').textContent = "Player X's turn";
+        }
+        
+        // Snake Game
+        let snake = [{x: 200, y: 200}];
+        let food = {x: 100, y: 100};
+        let direction = 'right';
+        let snakeSpeed = 150;
+        let snakeGameInterval;
+        
+        function initSnakeGame() {
+            generateFood();
+            snakeGameInterval = setInterval(updateSnakeGame, snakeSpeed);
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp' && direction !== 'down') direction = 'up';
+                if (e.key === 'ArrowDown' && direction !== 'up') direction = 'down';
+                if (e.key === 'ArrowLeft' && direction !== 'right') direction = 'left';
+                if (e.key === 'ArrowRight' && direction !== 'left') direction = 'right';
+            });
+        }
+        
+        function updateSnakeGame() {
+            const head = {...snake[0]};
+            
+            switch(direction) {
+                case 'up': head.y -= 20; break;
+                case 'down': head.y += 20; break;
+                case 'left': head.x -= 20; break;
+                case 'right': head.x += 20; break;
+            }
+            
+            // Check collision with walls
+            if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
+                resetSnakeGame();
+                return;
+            }
+            
+            // Check collision with self
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                resetSnakeGame();
+                return;
+            }
+            
+            snake.unshift(head);
+            
+            // Check if food is eaten
+            if (head.x === food.x && head.y === food.y) {
+                generateFood();
+            } else {
+                snake.pop();
+            }
+            
+            renderSnakeGame();
+        }
+        
+        function renderSnakeGame() {
+            const board = document.getElementById('snake-board');
+            board.innerHTML = '';
+            
+            // Render snake
+            snake.forEach((segment, index) => {
+                const snakeElement = document.createElement('div');
+                snakeElement.className = 'snake-segment';
+                snakeElement.style.left = segment.x + 'px';
+                snakeElement.style.top = segment.y + 'px';
+                if (index === 0) {
+                    snakeElement.style.backgroundColor = '#2E7D32';
+                }
+                board.appendChild(snakeElement);
+            });
+            
+            // Render food
+            const foodElement = document.createElement('div');
+            foodElement.className = 'food';
+            foodElement.style.left = food.x + 'px';
+            foodElement.style.top = food.y + 'px';
+            board.appendChild(foodElement);
+        }
+        
+        function generateFood() {
+            food = {
+                x: Math.floor(Math.random() * 20) * 20,
+                y: Math.floor(Math.random() * 20) * 20
+            };
+        }
+        
+        function resetSnakeGame() {
+            clearInterval(snakeGameInterval);
+            snake = [{x: 200, y: 200}];
+            direction = 'right';
+            generateFood();
+            initSnakeGame();
+        }
+        
+        // Memory Game
+        const emojis = ['🍎', '🍌', '🍒', '🍇', '🍊', '🍓', '🍑', '🥝'];
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        
+        function initMemoryGame() {
+            const cards = [...emojis, ...emojis];
+            memoryCards = shuffleArray(cards);
+            const board = document.getElementById('memory-board');
+            board.innerHTML = '';
+            
+            memoryCards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.index = index;
+                card.dataset.emoji = emoji;
+                
+                const front = document.createElement('div');
+                front.className = 'card-front';
+                front.textContent = '?';
+                
+                const back = document.createElement('div');
+                back.className = 'card-back';
+                back.textContent = emoji;
+                
+                card.appendChild(front);
+                card.appendChild(back);
+                card.addEventListener('click', flipCard);
+                board.appendChild(card);
+            });
+            
+            flippedCards = [];
+            matchedPairs = 0;
+        }
+        
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+                this.classList.add('flipped');
+                flippedCards.push(this);
+                
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+        }
+        
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                if (matchedPairs === emojis.length) {
+                    setTimeout(() => alert('Congratulations! You won!'), 500);
+                }
+            } else {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+            flippedCards = [];
+        }
+        
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        function resetMemoryGame() {
+            initMemoryGame();
+        }
+        
+        // Quiz Game
+        const quizQuestions = [
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correct: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correct: 1
+            },
+            {
+                question: "What is the largest mammal in the world?",
+                options: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
+                correct: 1
+            },
+            {
+                question: "How many sides does a hexagon have?",
+                options: ["5", "6", "7", "8"],
+                correct: 1
+            }
+        ];
+        
+        let currentQuestion = 0;
+        let score = 0;
+        
+        function initQuizGame() {
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            const question = quizQuestions[currentQuestion];
+            document.getElementById('quiz-question').textContent = question.question;
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('div');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+            
+            document.getElementById('quiz-result').textContent = '';
+        }
+        
+        function selectAnswer(selectedIndex) {
+            const correct = quizQuestions[currentQuestion].correct;
+            const result = document.getElementById('quiz-result');
+            
+            if (selectedIndex === correct) {
+                result.textContent = "Correct! 🎉";
+                result.style.color = "#28a745";
+                score++;
+            } else {
+                result.textContent = "Wrong! 😢";
+                result.style.color = "#dc3545";
+            }
+            
+            // Disable options after selection
+            document.querySelectorAll('.option').forEach(option => {
+                option.style.pointerEvents = 'none';
+                if (Array.from(option.parentNode.children).indexOf(option) === correct) {
+                    option.style.backgroundColor = "#d4edda";
+                    option.style.borderColor = "#c3e6cb";
+                }
+            });
+        }
+        
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizQuestions.length) {
+                showQuestion();
+            } else {
+                document.getElementById('quiz-question').textContent = `Game Over! Your score: ${score}/${quizQuestions.length}`;
+                document.getElementById('quiz-options').innerHTML = '';
+                document.getElementById('quiz-result').textContent = '';
+                currentQuestion = 0;
+                score = 0;
+            }
+        }
+        
+        // Hangman Game
+        const hangmanWords = ['javascript', 'computer', 'programming', 'developer', 'algorithm', 'function', 'variable'];
+        let hangmanWord = '';
+        let guessedLetters = [];
+        let wrongGuesses = 0;
+        const maxWrongGuesses = 6;
+        
+        function initHangmanGame() {
+            hangmanWord = hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
+            guessedLetters = [];
+            wrongGuesses = 0;
+            updateHangmanDisplay();
+            document.getElementById('hangman-guess').value = '';
+            document.getElementById('hangman-guess').focus();
+        }
+        
+        function updateHangmanDisplay() {
+            const wordDisplay = hangmanWord
+                .split('')
+                .map(letter => guessedLetters.includes(letter) ? letter : '_')
+                .join(' ');
+            
+            document.getElementById('hangman-word').textContent = wordDisplay;
+            
+            const wrongLetters = guessedLetters
+                .filter(letter => !hangmanWord.includes(letter))
+                .join(', ');
+            
+            document.getElementById('hangman-wrong').textContent = 
+                wrongLetters ? `Wrong letters: ${wrongLetters}` : '';
+            
+            if (!wordDisplay.includes('_')) {
+                setTimeout(() => alert('Congratulations! You won!'), 100);
+            } else if (wrongGuesses >= maxWrongGuesses) {
+                setTimeout(() => alert(`Game Over! The word was: ${hangmanWord}`), 100);
+            }
+        }
+        
+        function handleHangmanGuess(event) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById('hangman-guess');
+                const letter = input.value.toLowerCase();
+                
+                if (letter && letter.match(/[a-z]/) && !guessedLetters.includes(letter)) {
+                    guessedLetters.push(letter);
+                    if (!hangmanWord.includes(letter)) {
+                        wrongGuesses++;
+                    }
+                    updateHangmanDisplay();
+                }
+                
+                input.value = '';
+                input.focus();
+            }
+        }
+        
+        function resetHangman() {
+            initHangmanGame();
+        }
+        
+        // Pong Game
+        let leftPaddleY = 160;
+        let rightPaddleY = 160;
+        let ballX = 300;
+        let ballY = 200;
+        let ballDX = 3;
+        let ballDY = 2;
+        let leftScore = 0;
+        let rightScore = 0;
+        let pongInterval;
+        
+        function initPongGame() {
+            resetPongBall();
+            pongInterval = setInterval(updatePongGame, 16);
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'w' && leftPaddleY > 0) leftPaddleY -= 20;
+                if (e.key === 's' && leftPaddleY < 320) leftPaddleY += 20;
+                if (e.key === 'ArrowUp' && rightPaddleY > 0) rightPaddleY -= 20;
+                if (e.key === 'ArrowDown' && rightPaddleY < 320) rightPaddleY += 20;
+                updatePaddles();
+            });
+        }
+        
+        function updatePongGame() {
+            // Move ball
+            ballX += ballDX;
+            ballY += ballDY;
+            
+            // Wall collision (top/bottom)
+            if (ballY <= 0 || ballY >= 380) {
+                ballDY = -ballDY;
+            }
+            
+            // Paddle collision
+            if (ballX <= 25 && ballY >= leftPaddleY && ballY <= leftPaddleY + 80) {
+                ballDX = -ballDX;
+                ballX = 25;
+            }
+            
+            if (ballX >= 575 && ballY >= rightPaddleY && ballY <= rightPaddleY + 80) {
+                ballDX = -ballDX;
+                ballX = 575;
+            }
+            
+            // Scoring
+            if (ballX <= 0) {
+                rightScore++;
+                document.getElementById('right-score').textContent = rightScore;
+                resetPongBall();
+            }
+            
+            if (ballX >= 600) {
+                leftScore++;
+                document.getElementById('left-score').textContent = leftScore;
+                resetPongBall();
+            }
+            
+            updateBall();
+        }
+        
+        function resetPongBall() {
+            ballX = 300;
+            ballY = 200;
+            ballDX = Math.random() > 0.5 ? 3 : -3;
+            ballDY = (Math.random() * 4) - 2;
+        }
+        
+        function updatePaddles() {
+            document.getElementById('left-paddle').style.top = leftPaddleY + 'px';
+            document.getElementById('right-paddle').style.top = rightPaddleY + 'px';
+        }
+        
+        function updateBall() {
+            document.getElementById('ball').style.left = ballX + 'px';
+            document.getElementById('ball').style.top = ballY + 'px';
+        }
+        
+        // Game Management Functions
+        function openGame(gameId) {
+            document.querySelectorAll('.game-content').forEach(game => {
+                game.classList.remove('active');
+            });
+            
+            const gameContent = document.getElementById(gameId);
+            gameContent.classList.add('active');
+            
+            // Initialize specific games
+            if (gameId === 'tic-tac-toe') {
+                resetTicTacToe();
+            } else if (gameId === 'snake') {
+                resetSnakeGame();
+            } else if (gameId === 'memory') {
+                initMemoryGame();
+            } else if (gameId === 'quiz') {
+                initQuizGame();
+            } else if (gameId === 'hangman') {
+                initHangmanGame();
+            } else if (gameId === 'pong') {
+                leftScore = 0;
+                rightScore = 0;
+                document.getElementById('left-score').textContent = '0';
+                document.getElementById('right-score').textContent = '0';
+                initPongGame();
+            }
+        }
+        
+        function closeGame() {
+            document.querySelectorAll('.game-content').forEach(game => {
+                game.classList.remove('active');
+            });
+            
+            // Clean up intervals
+            if (snakeGameInterval) clearInterval(snakeGameInterval);
+            if (pongInterval) clearInterval(pongInterval);
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('tic-tac-toe-status').textContent = "Player X's turn";
+        });
+    </script>
+</body>
+</html>
